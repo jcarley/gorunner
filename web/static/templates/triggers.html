@@ -1,26 +1,26 @@
 <div class="pull-right">
-	<div class="btn-group">
-		<button class="btn dropdown-toggle" data-toggle="dropdown">
-			<i class="icon-gear icon-large"></i>
-			<span class="caret"></span>
-		</button>
-		<ul class="dropdown-menu pull-right">
-			<li><a href="javascript:void(0)" ng-click="promptTrigger()"><i class="icon-plus"></i> Add new trigger</a>
-			</li>
-		</ul>
-	</div>
+  <div class="btn-group">
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+      <i class="icon-gear icon-large"></i>
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu pull-right">
+      <li><a href="javascript:void(0)" ng-click="promptTrigger()"><i class="icon-plus"></i> Add new trigger</a>
+      </li>
+    </ul>
+  </div>
 </div>
 <h1>Triggers</h1>
 <p ng-hide="triggers.length > 0">There are no triggers. You can add one by clicking the gear above.</p>
 <div class="row">
-	<a href="#/triggers/{{selected[0].name}}" class="btn" ng-class="{disabled: selected.length==0}">
-		<i class="icon-folder-open"></i> Open
-	</a>
-	<button class="btn btn-danger" ng-class="{disabled: selected.length==0}" ng-click="deleteTrigger(selected[0].name)">
-		<i class="icon-trash"></i> Delete
-	</button>
+  <a href="#/triggers/{{selected[0].name}}" class="btn" ng-class="{disabled: selected.length==0}">
+    <i class="icon-folder-open"></i> Open
+  </a>
+  <button class="btn btn-danger" ng-class="{disabled: selected.length==0}" ng-click="deleteTrigger(selected[0].name)">
+    <i class="icon-trash"></i> Delete
+  </button>
 </div>
 <hr/>
 <div class="row">
-	<div class="ng-grid-style" ng-grid="gridOptions"></div>
+  <div class="ng-grid-style" ng-grid="gridOptions"></div>
 </div>

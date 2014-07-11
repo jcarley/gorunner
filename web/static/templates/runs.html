@@ -1,12 +1,12 @@
 <h1>Runs</h1>
 <p ng-hide="runs.length > 0">
-	No runs yet. To create a run, first create a <a href="/#/tasks">Task</a> and assign it to a
-	<a href="/#/jobs">Job</a>, then run the job.
+  No runs yet. To create a run, first create a <a href="/#/tasks">Task</a> and assign it to a
+  <a href="/#/jobs">Job</a>, then run the job.
 </p>
 <div class="row">
-	<a href="#/runs/{{selected[0].uuid}}" class="btn" ng-class="{disabled: selected.length==0}">
-		<i class="icon-folder-open"></i> Open
-	</a>
+  <a href="#/runs/{{selected[0].uuid}}" class="btn" ng-class="{disabled: selected.length==0}">
+    <i class="icon-folder-open"></i> Open
+  </a>
 </div>
 <hr/>
 <div class="ng-grid-style" ng-grid="gridOptions"></div>

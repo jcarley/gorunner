@@ -1,17 +1,17 @@
 <div class="pull-right">
-	<div class="btn-group">
-		<button class="btn dropdown-toggle" data-toggle="dropdown">
-			<i class="icon-gear icon-large"></i>
-			<span class="caret"></span>
-		</button>
-		<ul class="dropdown-menu pull-right">
-			<li><a href="javascript:void(0)" ng-click="deleteTask()"><i class="icon-remove"></i> Delete task</a></li>
-		</ul>
-	</div>
+  <div class="btn-group">
+    <button class="btn dropdown-toggle" data-toggle="dropdown">
+      <i class="icon-gear icon-large"></i>
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu pull-right">
+      <li><a href="javascript:void(0)" ng-click="deleteTask()"><i class="icon-remove"></i> Delete task</a></li>
+    </ul>
+  </div>
 </div>
 <h1>{{ task.name }}</h1>
 <style>
-	.ace_editor { height: 200px; }
+  .ace_editor { height: 200px; }
 </style>
 <div ng-model="task.script" ui-ace="{mode: 'sh'}"></div>
 <hr/>
@@ -20,5 +20,5 @@
 <p ng-hide="jobs.length > 0">This task is not bound to any jobs.</p>
 <p ng-show="jobs.length > 0">This task is bound to the following jobs:</p>
 <ul ng-show="jobs.length > 0">
-	<li ng-repeat="job in jobs"><a href="/#/jobs/{{job.name}}">{{job.name}}</a></li>
+  <li ng-repeat="job in jobs"><a href="/#/jobs/{{job.name}}">{{job.name}}</a></li>
 </ul>

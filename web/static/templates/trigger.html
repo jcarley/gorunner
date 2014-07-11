@@ -8,7 +8,7 @@
 <p ng-hide="jobs.length > 0">This trigger is not bound to any jobs.</p>
 <p ng-show="jobs.length > 0">This trigger is bound to the following jobs.</p>
 <ul ng-show="jobs.length > 0">
-	<li ng-repeat="job in jobs">
-		<a href="/#/jobs/{{job.name}}">{{job.name}}</a>
-	</li>
+  <li ng-repeat="job in jobs">
+    <a href="/#/jobs/{{job.name}}">{{job.name}}</a>
+  </li>
 </ul>
