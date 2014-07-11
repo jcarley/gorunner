@@ -18,9 +18,8 @@ var _ = Describe("Jobs", func() {
 
 	Describe("AppendTask", func() {
 		It("appends a new task", func() {
-			job := Job{"name", make([]string, 0), "status", make([]string, 0)}
+			job := Job{Name: "name", Tasks: make([]string, 0), Status: "status", Triggers: make([]string, 0)}
 			job.AppendTask("task")
-			// expected := []string{"task"}
 			Expect(job.Tasks).To(ContainElement("task"))
 		})
 	})
