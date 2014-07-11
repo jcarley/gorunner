@@ -1,22 +1,27 @@
-package models
+package models_test
 
 import (
-  "fmt"
-  "testing"
+	. "github.com/jcarley/gorunner/models"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestJobID(t *testing.T) {
-  job := Job{Name: "name"}
-  if job.ID() != "name" {
-    t.Errorf("ID() expected %s but got %s", "name", job.ID())
-  }
-}
+var _ = Describe("Jobs", func() {
+	Describe("ID function", func() {
+		It("returns the name of the Job", func() {
+			job := Job{Name: "name"}
+			Expect(job.ID()).To(Equal("name"))
+		})
+	})
 
-func TestJobAppendTask(t *testing.T) {
-  job := Job{"name", make([]string, 0), "status", make([]string, 0)}
-  job.AppendTask("task")
-  expected := []string{"task"}
-  if fmt.Sprintf("%#v", job.Tasks) != fmt.Sprintf("%#v", expected) {
-    t.Errorf("Expected %#v but got %#v", expected, job.Tasks)
-  }
-}
+	Describe("AppendTask", func() {
+		It("appends a new task", func() {
+			job := Job{"name", make([]string, 0), "status", make([]string, 0)}
+			job.AppendTask("task")
+			// expected := []string{"task"}
+			Expect(job.Tasks).To(ContainElement("task"))
+		})
+	})
+
+})
