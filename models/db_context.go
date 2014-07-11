@@ -17,7 +17,7 @@ func NewDbContext() DbContext {
 	checkError(err, "Create tables failed")
 
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
-	// dbmap.AddTableWithName(Bucket{}, "buckets").SetKeys(true, "Id")
+	dbmap.AddTableWithName(Job{}, "jobs").SetKeys(true, "Id")
 
 	return DbContext{Dbmap: dbmap}
 }

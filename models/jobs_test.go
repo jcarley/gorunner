@@ -8,6 +8,7 @@ import (
 )
 
 var _ = Describe("Jobs", func() {
+
 	Describe("ID function", func() {
 		It("returns the name of the Job", func() {
 			job := Job{Name: "name"}
