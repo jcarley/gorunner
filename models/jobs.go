@@ -6,11 +6,11 @@ import (
 )
 
 type Job struct {
-	Id       int64    `json:"id", db:"id"`
-	Name     string   `json:"name"`
-	Tasks    []string `json:"tasks"`
-	Status   string   `json:"status"`
-	Triggers []string `json:"triggers"`
+	Id       int64    `db:"id", json:"id"`
+	Name     string   `db:"name", json:"name"`
+	Tasks    []string `db:"tasks", json:"tasks"`
+	Status   string   `db:"status", json:"status"`
+	Triggers []string `db:"triggers", json:"triggers"`
 	Created  int64    `db:"created_at"`
 	Updated  int64    `db:"updated_at"`
 	Version  int64    `db:"version"`

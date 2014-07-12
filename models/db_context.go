@@ -14,7 +14,7 @@ type DbContext struct {
 
 func NewDbContext() DbContext {
 	db, err := sql.Open("mysql", "gorunner-admin:letmein123@/gorunner")
-	checkError(err, "Create tables failed")
+	checkError(err, "Open a connection failed")
 
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
 	dbmap.AddTableWithName(Job{}, "jobs").SetKeys(true, "Id")
@@ -28,10 +28,17 @@ func checkError(err error, msg string) {
 	}
 }
 
-func (this DbContext) Migrate() {
+func (this DbContext) Migrate() error {
 	err := this.Dbmap.DropTablesIfExists()
-	checkError(err, "Droping tables failed")
+	if err != nil {
+		return err
+	}
+	// checkError(err, "Droping tables failed")
 
 	err = this.Dbmap.CreateTablesIfNotExists()
-	checkError(err, "Create tables failed")
+	if err != nil {
+		return err
+	}
+	// checkError(err, "Create tables failed")
+	return nil
 }

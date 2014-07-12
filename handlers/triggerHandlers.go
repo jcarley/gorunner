@@ -1,10 +1,11 @@
 package handlers
 
 import (
-	"github.com/gorilla/mux"
-	"github.com/jakecoffman/gorunner/executor"
-	"github.com/jakecoffman/gorunner/models"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/jcarley/gorunner/executor"
+	"github.com/jcarley/gorunner/models"
 )
 
 func ListTriggers(w http.ResponseWriter, r *http.Request) {

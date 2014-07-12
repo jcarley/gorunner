@@ -1,11 +1,12 @@
 package handlers
 
 import (
-	"github.com/gorilla/mux"
-	"github.com/jakecoffman/gorunner/models"
-	"github.com/nu7hatch/gouuid"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
+	"github.com/jcarley/gorunner/models"
+	"github.com/nu7hatch/gouuid"
 )
 
 func ListRuns(w http.ResponseWriter, r *http.Request) {
