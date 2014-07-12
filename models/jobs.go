@@ -6,14 +6,14 @@ import (
 )
 
 type Job struct {
-	Id       int64    `db:"id", json:"id"`
-	Name     string   `db:"name", json:"name"`
-	Tasks    []string `db:"tasks", json:"tasks"`
-	Status   string   `db:"status", json:"status"`
-	Triggers []string `db:"triggers", json:"triggers"`
-	Created  int64    `db:"created_at"`
-	Updated  int64    `db:"updated_at"`
-	Version  int64    `db:"version"`
+	Id       int64    `db:"id" json:"id,omitempty"`
+	Name     string   `db:"name" json:"name,omitempty"`
+	Tasks    []string `db:"tasks" json:"tasks,omitempty"`
+	Status   string   `db:"status" json:"status,omitempty"`
+	Triggers []string `db:"triggers" json:"triggers,omitempty"`
+	Created  int64    `db:"created_at" json:"created_at,omitempty"`
+	Updated  int64    `db:"updated_at" json:"updated_at,omitempty"`
+	Version  int64    `db:"version" json:"version,omitempty"`
 }
 
 func (j Job) ID() string {
