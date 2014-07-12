@@ -34,6 +34,7 @@ func InitDatabase() {
 
 func GetJobList() *JobList {
 	dbContext := NewDbContext()
+	defer dbContext.Dbmap.Db.Close()
 
 	var jobs []Job
 	_, err := dbContext.Dbmap.Select(&jobs, "select * from jobs")
@@ -54,18 +55,16 @@ func GetJobList() *JobList {
 
 func AddJob(job *Job) error {
 	dbContext := NewDbContext()
+	defer dbContext.Dbmap.Db.Close()
 
-	// trans, err := dbContext.Dbmap.Begin()
-	// if err != nil {
-	// return err
-	// }
-
-	err := dbContext.Dbmap.Insert(job)
+	trans, err := dbContext.Dbmap.Begin()
 	if err != nil {
 		return err
 	}
 
-	return nil
+	trans.Insert(job)
+
+	return trans.Commit()
 }
 
 func GetRunList() *RunList {
