@@ -8,9 +8,9 @@ import (
 type Job struct {
 	Id       int64    `db:"id" json:"id,omitempty"`
 	Name     string   `db:"name" json:"name,omitempty"`
-	Tasks    []string `db:"tasks" json:"tasks,omitempty"`
+	Tasks    []string `db:"-" json:"tasks,omitempty"`
 	Status   string   `db:"status" json:"status,omitempty"`
-	Triggers []string `db:"triggers" json:"triggers,omitempty"`
+	Triggers []string `db:"-" json:"triggers,omitempty"`
 	Created  int64    `db:"created_at" json:"created_at,omitempty"`
 	Updated  int64    `db:"updated_at" json:"updated_at,omitempty"`
 	Version  int64    `db:"version" json:"version,omitempty"`

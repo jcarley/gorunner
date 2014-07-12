@@ -13,7 +13,7 @@ type DbContext struct {
 	Dbmap *gorp.DbMap
 }
 
-func NewDbContext() DbContext {
+func NewDbContext() *DbContext {
 	db, err := sql.Open("mysql", "gorunner-admin:letmein123@/gorunner")
 	checkError(err, "Open a connection failed")
 
@@ -21,7 +21,7 @@ func NewDbContext() DbContext {
 	dbmap.TraceOn("[gorp]", log.New(os.Stdout, "gorunner", log.Lmicroseconds))
 	dbmap.AddTableWithName(Job{}, "jobs").SetKeys(true, "Id")
 
-	return DbContext{Dbmap: dbmap}
+	return &DbContext{Dbmap: dbmap}
 }
 
 func checkError(err error, msg string) {
@@ -30,7 +30,7 @@ func checkError(err error, msg string) {
 	}
 }
 
-func (this DbContext) Migrate() error {
+func (this *DbContext) Migrate() error {
 	err := this.Dbmap.DropTablesIfExists()
 	if err != nil {
 		return err

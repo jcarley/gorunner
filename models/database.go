@@ -47,6 +47,8 @@ func GetJobList() *JobList {
 		jobList.elements = append(jobList.elements, job)
 	}
 
+	dbContext.Dbmap.Db.Close()
+
 	return &jobList
 }
 
