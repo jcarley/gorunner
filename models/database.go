@@ -50,6 +50,22 @@ func GetJobList() *JobList {
 	return &jobList
 }
 
+func AddJob(job *Job) error {
+	dbContext := NewDbContext()
+
+	// trans, err := dbContext.Dbmap.Begin()
+	// if err != nil {
+	// return err
+	// }
+
+	err := dbContext.Dbmap.Insert(job)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func GetRunList() *RunList {
 	return &runList
 }

@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/jcarley/gorunner/executor"
@@ -14,11 +15,10 @@ func ListJobs(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobList()
-
 	payload := unmarshal(r.Body, "name", w)
 
-	err := jobList.Append(models.Job{Name: payload["name"], Status: "New"})
+	job := &models.Job{Name: payload["name"], Status: "New", Created: time.Now().UnixNano(), Updated: time.Now().UnixNano()}
+	err := models.AddJob(job)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
