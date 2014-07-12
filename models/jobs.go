@@ -3,6 +3,9 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"time"
+
+	"github.com/coopernurse/gorp"
 )
 
 type Job struct {
@@ -14,6 +17,17 @@ type Job struct {
 	Created  int64    `db:"created_at" json:"created_at,omitempty"`
 	Updated  int64    `db:"updated_at" json:"updated_at,omitempty"`
 	Version  int64    `db:"version" json:"version,omitempty"`
+}
+
+func (j *Job) PreInsert(s gorp.SqlExecutor) error {
+	j.Created = time.Now().UnixNano()
+	j.Updated = j.Created
+	return nil
+}
+
+func (j *Job) PreUpdate(s gorp.SqlExecutor) error {
+	j.Updated = time.Now().UnixNano()
+	return nil
 }
 
 func (j Job) ID() string {
