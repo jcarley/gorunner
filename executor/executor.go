@@ -1,7 +1,7 @@
 package executor
 
 import (
-	"github.com/jcarley/cron"
+	"github.com/jakecoffman/cron"
 	"github.com/jcarley/gorunner/models"
 	"github.com/nu7hatch/gouuid"
 )
