@@ -70,6 +70,10 @@ function JobCtl($scope, $routeParams, Job, Task, Trigger) {
     window.location = "/#/jobs";
   };
 
+  $scope.done = function() {
+    window.location = "/#/jobs";
+  }
+
   $scope.refreshJob();
   $scope.refreshTasks();
   $scope.refreshTriggers();
