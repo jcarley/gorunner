@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"log"
+	"os"
 
 	"github.com/coopernurse/gorp"
 	_ "github.com/go-sql-driver/mysql"
@@ -17,6 +18,7 @@ func NewDbContext() DbContext {
 	checkError(err, "Open a connection failed")
 
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
+	dbmap.TraceOn("[gorp]", log.New(os.Stdout, "gorunner", log.Lmicroseconds))
 	dbmap.AddTableWithName(Job{}, "jobs").SetKeys(true, "Id")
 
 	return DbContext{Dbmap: dbmap}
