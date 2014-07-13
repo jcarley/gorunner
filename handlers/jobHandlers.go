@@ -39,18 +39,9 @@ func GetJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteJob(w http.ResponseWriter, r *http.Request) {
-	// jobList := models.GetJobList()
-
 	vars := mux.Vars(r)
 	jobId := vars["job"]
 
-	// job, err := jobList.Get(vars["job"])
-	// if err != nil {
-	// http.Error(w, err.Error(), http.StatusNotFound)
-	// return
-	// }
-
-	// err = jobList.Delete(job.ID())
 	err := models.DeleteJob(jobId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
