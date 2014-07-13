@@ -23,6 +23,7 @@ function TaskCtl($scope, $routeParams, Task) {
   };
 
   $scope.deleteTask = function() {
-    Task.$delete({id: $routeParams.task});
+    Task.delete({id: $routeParams.task});
+    window.location = "/#/tasks";
   }
 }
