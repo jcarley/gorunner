@@ -67,6 +67,20 @@ func AddJob(job *Job) error {
 	return trans.Commit()
 }
 
+func DeleteJob(jobId string) error {
+	dbContext := NewDbContext()
+	defer dbContext.Dbmap.Db.Close()
+
+	trans, err := dbContext.Dbmap.Begin()
+	if err != nil {
+		return err
+	}
+
+	trans.Exec("delete from jobs where name = ?", jobId)
+
+	return trans.Commit()
+}
+
 func GetRunList() *RunList {
 	return &runList
 }
