@@ -26,10 +26,10 @@ func AddJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobList()
-
 	vars := mux.Vars(r)
-	job, err := jobList.Get(vars["job"])
+	jobId := vars["job"]
+
+	job, err := models.GetJob(jobId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return

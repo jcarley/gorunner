@@ -67,6 +67,20 @@ func AddJob(job *Job) error {
 	return trans.Commit()
 }
 
+func GetJob(jobId string) (*Job, error) {
+	dbContext := NewDbContext()
+	defer dbContext.Dbmap.Db.Close()
+
+	var job Job
+	err := dbContext.Dbmap.SelectOne(&job, "select * from jobs where name=?", jobId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &job, nil
+}
+
 func DeleteJob(jobId string) error {
 	dbContext := NewDbContext()
 	defer dbContext.Dbmap.Db.Close()
