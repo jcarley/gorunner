@@ -8,11 +8,15 @@ deps:
 	@echo "$(OK_COLOR)==> Installing dependencies$(NO_COLOR)"
 	@go get -d -v ./...
 	@echo $(DEPS) | xargs -n1 go get -d
+	@go get github.com/onsi/ginkgo/ginkgo
+	@go get github.com/onsi/gomega
 
 updatedeps:
 	@echo "$(OK_COLOR)==> Updating all dependencies$(NO_COLOR)"
 	@go get -d -v -u ./...
 	@echo $(DEPS) | xargs -n1 go get -d -u
+	@go get -d -v -u github.com/onsi/ginkgo/ginkgo
+	@go get -d -v -u github.com/onsi/gomega
 
 format:
 	go fmt ./...
