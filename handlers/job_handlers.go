@@ -50,15 +50,15 @@ func DeleteJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddTaskToJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobList()
-
 	vars := mux.Vars(r)
-	job, err := jobList.Get(vars["job"])
+	jobId := vars["job"]
+
+	job, err := models.GetJob(jobId)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	j := job.(models.Job)
+	// j := job.(models.Job)
 
 	payload := unmarshal(r.Body, "task", w)
 	j.AppendTask(payload["task"])
