@@ -19,7 +19,7 @@ func AddTask(w http.ResponseWriter, r *http.Request) {
 
 	payload := unmarshal(r.Body, "name", w)
 
-	err := taskList.Append(models.Task{payload["name"], ""})
+	err := taskList.Append(models.Task{Name: payload["name"], Script: ""})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

@@ -61,8 +61,8 @@ func AddTaskToJob(w http.ResponseWriter, r *http.Request) {
 	// j := job.(models.Job)
 
 	payload := unmarshal(r.Body, "task", w)
-	j.AppendTask(payload["task"])
-	jobList.Update(j)
+	job.AppendTask(payload["task"])
+	// jobList.Update(j)
 
 	w.WriteHeader(201)
 }
