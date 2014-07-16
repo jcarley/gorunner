@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"os"
+	"path"
 
 	"github.com/coopernurse/gorp"
 	_ "github.com/go-sql-driver/mysql"
@@ -18,7 +19,18 @@ func NewDbContext() *DbContext {
 	checkError(err, "Open a connection failed")
 
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
-	dbmap.TraceOn("[gorp]", log.New(os.Stdout, "gorunner", log.Lmicroseconds))
+
+	// dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatal(err)
+	}
+	logFilename := path.Join(dir, "../logs/gorp.log")
+	logFile, err := os.OpenFile(logFilename, os.O_RDWR, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	dbmap.TraceOn("[gorp]", log.New(logFile, "gorunner", log.Lmicroseconds))
 	dbmap.AddTableWithName(Job{}, "jobs").SetKeys(true, "Id")
 
 	return &DbContext{Dbmap: dbmap}
