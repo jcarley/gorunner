@@ -20,7 +20,6 @@ func NewDbContext() *DbContext {
 
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
 
-	// dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
