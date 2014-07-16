@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -14,6 +15,14 @@ import (
 )
 
 var _ = Describe("JobHandlers", func() {
+
+	BeforeEach(func() {
+		dbContext := models.NewDbContext()
+		defer dbContext.Dbmap.Db.Close()
+		err := dbContext.Dbmap.TruncateTables()
+
+		Expect(err).NotTo(HaveOccurred())
+	})
 
 	Describe("ListJobs function", func() {
 
@@ -43,8 +52,44 @@ var _ = Describe("JobHandlers", func() {
 			Expect(payload[0].Name).To(Equal("test build"))
 			Expect(payload[0].Status).To(Equal("New"))
 
-			// fmt.Printf("%v+", payload)
 			// fmt.Printf("%d - %s", w.Code, w.Body.String())
+		})
+	})
+
+	Describe("AddJob function", func() {
+		It("returns a http status code of 201", func() {
+
+			body := bytes.NewBufferString(`{"name": "test job name"}`)
+
+			req, err := http.NewRequest("POST", "/jobs", body)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			w := httptest.NewRecorder()
+			handlers.AddJob(w, req)
+
+			Expect(w.Code).To(Equal(201))
+		})
+
+		It("adds a job", func() {
+			body := bytes.NewBufferString(`{"name": "test job name"}`)
+
+			req, err := http.NewRequest("POST", "/jobs", body)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			w := httptest.NewRecorder()
+			handlers.AddJob(w, req)
+
+			var job models.Job
+
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+			dbContext.Dbmap.SelectOne(&job, "select * from jobs where name = ?", "test job name")
+
+			Expect(job).NotTo(BeNil())
 		})
 	})
 

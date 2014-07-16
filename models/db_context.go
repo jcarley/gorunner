@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"io"
 	"log"
 	"os"
 	"path"
@@ -16,19 +17,13 @@ type DbContext struct {
 
 func NewDbContext() *DbContext {
 	db, err := sql.Open("mysql", "gorunner-admin:letmein123@/gorunner")
-	checkError(err, "Open a connection failed")
+	checkError(err, "Opening a connection failed")
 
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
 
-	dir, err := os.Getwd()
-	if err != nil {
-		log.Fatal(err)
-	}
-	logFilename := path.Join(dir, "../logs/gorp.log")
-	logFile, err := os.OpenFile(logFilename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatal(err)
-	}
+	logFile, err := logfileLocation()
+	checkError(err, "")
+
 	dbmap.TraceOn("[gorp]", log.New(logFile, "gorunner", log.Lmicroseconds))
 	dbmap.AddTableWithName(Job{}, "jobs").SetKeys(true, "Id")
 
@@ -41,17 +36,21 @@ func checkError(err error, msg string) {
 	}
 }
 
-func (this *DbContext) Migrate() error {
+func logfileLocation() (io.Writer, error) {
+	dir, err := os.Getwd()
+	checkError(err, "")
+
+	logFilename := path.Join(dir, "../logs/gorp.log")
+	logFile, err := os.OpenFile(logFilename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	checkError(err, "")
+
+	return logFile, nil
+}
+
+func (this *DbContext) Migrate() {
 	err := this.Dbmap.DropTablesIfExists()
-	if err != nil {
-		return err
-	}
-	// checkError(err, "Droping tables failed")
+	checkError(err, "Droping tables failed")
 
 	err = this.Dbmap.CreateTablesIfNotExists()
-	if err != nil {
-		return err
-	}
-	// checkError(err, "Create tables failed")
-	return nil
+	checkError(err, "Create tables failed")
 }

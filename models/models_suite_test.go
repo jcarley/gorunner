@@ -15,6 +15,8 @@ func TestModels(t *testing.T) {
 
 var _ = BeforeSuite(func() {
 	dbContext := models.NewDbContext()
-	err := dbContext.Migrate()
+	defer dbContext.Dbmap.Db.Close()
+	err := dbContext.Dbmap.TruncateTables()
+
 	Expect(err).NotTo(HaveOccurred())
 })
