@@ -26,7 +26,7 @@ func NewDbContext() *DbContext {
 		log.Fatal(err)
 	}
 	logFilename := path.Join(dir, "../logs/gorp.log")
-	logFile, err := os.OpenFile(logFilename, os.O_RDWR, 0666)
+	logFile, err := os.OpenFile(logFilename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
