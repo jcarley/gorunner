@@ -1,28 +1,51 @@
 package handlers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/coopernurse/gorp"
 	"github.com/gorilla/mux"
 	"github.com/jcarley/gorunner/executor"
 	"github.com/jcarley/gorunner/models"
 )
 
-func ListJobs(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(models.GetJobList().Json()))
+func withTransaction(dbContext *models.DbContext, handler func(trans *gorp.Transaction) error) error {
+
+	trans, err := dbContext.Dbmap.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := handler(trans); err != nil {
+		return trans.Rollback()
+	}
+
+	return trans.Commit()
 }
 
-func AddJob(w http.ResponseWriter, r *http.Request) {
-	payload := unmarshal(r.Body, "name", w)
+func ListJobs(appContext *AppContext) {
+	appContext.Response.Write([]byte(models.GetJobList(appContext.DbContext).Json()))
+}
+
+func AddJob(appContext *AppContext) {
+
+	dbContext := appContext.DbContext
+
+	payload := unmarshal(appContext.Request.Body, "name", appContext.Response)
 
 	job := &models.Job{Name: payload["name"], Status: "New"}
-	err := models.AddJob(job)
+
+	err := withTransaction(dbContext, func(trans *gorp.Transaction) error {
+		return models.AddJob(job, trans)
+	})
+
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(appContext.Response, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(201)
+	appContext.Response.WriteHeader(201)
 }
 
 func GetJob(w http.ResponseWriter, r *http.Request) {
@@ -68,7 +91,7 @@ func AddTaskToJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func RemoveTaskFromJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobList()
+	jobList := models.GetJobListOld()
 
 	vars := mux.Vars(r)
 	job, err := jobList.Get(vars["job"])
@@ -88,7 +111,7 @@ func RemoveTaskFromJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddTriggerToJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobList()
+	jobList := models.GetJobListOld()
 
 	vars := mux.Vars(r)
 	job, err := jobList.Get(vars["job"])
@@ -114,7 +137,7 @@ func AddTriggerToJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func RemoveTriggerFromJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobList()
+	jobList := models.GetJobListOld()
 
 	vars := mux.Vars(r)
 	job, err := jobList.Get(vars["job"])

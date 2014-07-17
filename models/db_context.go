@@ -21,10 +21,10 @@ func NewDbContext() *DbContext {
 
 	dbmap := &gorp.DbMap{Db: db, Dialect: gorp.MySQLDialect{"InnoDB", "UTF8"}}
 
-	logFile, err := logfileLocation()
-	checkError(err, "")
+	// logFile, err := logfileLocation()
+	// checkError(err, "")
 
-	dbmap.TraceOn("[gorp]", log.New(logFile, "gorunner", log.Lmicroseconds))
+	// dbmap.TraceOn("[gorp]", log.New(logFile, "gorunner", log.Lmicroseconds))
 	dbmap.AddTableWithName(Job{}, "jobs").SetKeys(true, "Id")
 
 	return &DbContext{Dbmap: dbmap}
@@ -40,7 +40,7 @@ func logfileLocation() (io.Writer, error) {
 	dir, err := os.Getwd()
 	checkError(err, "")
 
-	logFilename := path.Join(dir, "../logs/gorp.log")
+	logFilename := path.Join(dir, "logs/gorp.log")
 	logFile, err := os.OpenFile(logFilename, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	checkError(err, "")
 

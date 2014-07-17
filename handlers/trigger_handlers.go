@@ -68,7 +68,7 @@ func DeleteTrigger(w http.ResponseWriter, r *http.Request) {
 }
 
 func ListJobsForTrigger(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobList()
+	jobList := models.GetJobListOld()
 	vars := mux.Vars(r)
 	jobs := jobList.GetJobsWithTrigger(vars["trigger"])
 	marshal(jobs, w)

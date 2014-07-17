@@ -40,7 +40,7 @@ func ListRuns(w http.ResponseWriter, r *http.Request) {
 
 func AddRun(w http.ResponseWriter, r *http.Request) {
 	runsList := models.GetRunList()
-	jobsList := models.GetJobList()
+	jobsList := models.GetJobListOld()
 	tasksList := models.GetTaskList()
 
 	payload := unmarshal(r.Body, "job", w)

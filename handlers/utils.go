@@ -43,8 +43,8 @@ func Install(r *mux.Router) {
 	r.HandleFunc("/", App)
 	r.HandleFunc("/ws", WsHandler)
 
-	r.HandleFunc("/jobs", ListJobs).Methods("GET")
-	r.HandleFunc("/jobs", AddJob).Methods("POST")
+	r.HandleFunc("/jobs", AppContextHandlerFunc(ListJobs)).Methods("GET")
+	r.HandleFunc("/jobs", AppContextHandlerFunc(AddJob)).Methods("POST")
 	r.HandleFunc("/jobs/{job}", GetJob).Methods("GET")
 	r.HandleFunc("/jobs/{job}", DeleteJob).Methods("DELETE")
 	r.HandleFunc("/jobs/{job}/tasks", AddTaskToJob).Methods("POST")

@@ -67,6 +67,11 @@ var _ = Describe("JobHandlers", func() {
 			}
 
 			w := httptest.NewRecorder()
+
+			jobController := handlers.NewJobController()
+			jobController.Database = SetSomeDatabase()
+			jobController.AddJob(w, req)
+
 			handlers.AddJob(w, req)
 
 			Expect(w.Code).To(Equal(201))

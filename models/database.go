@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"sort"
+
+	"github.com/coopernurse/gorp"
 )
 
 const (
@@ -32,9 +34,14 @@ func InitDatabase() {
 	runList.Load()
 }
 
-func GetJobList() *JobList {
+func GetJobListOld() *JobList {
 	dbContext := NewDbContext()
 	defer dbContext.Dbmap.Db.Close()
+
+	return GetJobList(dbContext)
+}
+
+func GetJobList(dbContext *DbContext) *JobList {
 
 	var jobs []Job
 	_, err := dbContext.Dbmap.Select(&jobs, "select * from jobs")
@@ -48,23 +55,11 @@ func GetJobList() *JobList {
 		jobList.elements = append(jobList.elements, job)
 	}
 
-	dbContext.Dbmap.Db.Close()
-
 	return &jobList
 }
 
-func AddJob(job *Job) error {
-	dbContext := NewDbContext()
-	defer dbContext.Dbmap.Db.Close()
-
-	trans, err := dbContext.Dbmap.Begin()
-	if err != nil {
-		return err
-	}
-
-	trans.Insert(job)
-
-	return trans.Commit()
+func AddJob(job *Job, trans *gorp.Transaction) error {
+	return trans.Insert(job)
 }
 
 func GetJob(jobId string) (*Job, error) {
