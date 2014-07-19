@@ -34,14 +34,92 @@ func InitDatabase() {
 	runList.Load()
 }
 
-func GetJobListOld() *JobList {
-	dbContext := NewDbContext()
-	defer dbContext.Dbmap.Db.Close()
-
-	return GetJobList(dbContext)
+type Database struct {
+	dbContext     *DbContext
+	transactional bool
 }
 
-func GetJobList(dbContext *DbContext) *JobList {
+func NewDatabase(context *DbContext) *Database {
+	database := &Database{dbContext: context, transactional: false}
+	return database
+}
+
+func (this *Database) InTransaction() *Database {
+	this.transactional = true
+	return this
+}
+
+func (this *Database) exec(f func(s gorp.SqlExecutor) error) error {
+	if this.transactional {
+		return this.withTransaction(f)
+	} else {
+		return this.withOutTransaction(f)
+	}
+
+}
+
+func (this *Database) withTransaction(f func(s gorp.SqlExecutor) error) error {
+	trans, err := this.dbContext.Dbmap.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := f(trans); err != nil {
+		return trans.Rollback()
+	}
+
+	return trans.Commit()
+}
+
+func (this *Database) withOutTransaction(f func(s gorp.SqlExecutor) error) error {
+	return f(this.dbContext.Dbmap)
+}
+
+func (this *Database) AddJob(job *Job) error {
+	return this.exec(func(s gorp.SqlExecutor) error {
+		return s.Insert(job)
+	})
+}
+
+func (this *Database) GetJobList() *JobList {
+
+	var jobs []Job
+
+	var err error
+	this.exec(func(s gorp.SqlExecutor) error {
+		_, err := s.Select(&jobs, "select * from jobs")
+		return err
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	jobList := JobList{list{elements: make([]elementer, 0)}}
+
+	for _, job := range jobs {
+		jobList.elements = append(jobList.elements, job)
+	}
+
+	return &jobList
+}
+
+func (this *Database) GetJob(jobId string) (*Job, error) {
+	var job Job
+
+	err := this.exec(func(s gorp.SqlExecutor) error {
+		return s.SelectOne(&job, "select * from jobs where name=?", jobId)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &job, nil
+}
+
+func GetJobList() *JobList {
+	dbContext := NewDbContext()
+	defer dbContext.Dbmap.Db.Close()
 
 	var jobs []Job
 	_, err := dbContext.Dbmap.Select(&jobs, "select * from jobs")
@@ -56,24 +134,6 @@ func GetJobList(dbContext *DbContext) *JobList {
 	}
 
 	return &jobList
-}
-
-func AddJob(job *Job, trans *gorp.Transaction) error {
-	return trans.Insert(job)
-}
-
-func GetJob(jobId string) (*Job, error) {
-	dbContext := NewDbContext()
-	defer dbContext.Dbmap.Db.Close()
-
-	var job Job
-	err := dbContext.Dbmap.SelectOne(&job, "select * from jobs where name=?", jobId)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &job, nil
 }
 
 func DeleteJob(jobId string) error {

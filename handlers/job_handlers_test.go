@@ -28,7 +28,13 @@ var _ = Describe("JobHandlers", func() {
 
 		BeforeEach(func() {
 			job := &models.Job{Name: "test build", Status: "New"}
-			models.AddJob(job)
+
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+
+			database := models.NewDatabase(dbContext)
+
+			database.AddJob(job)
 		})
 
 		It("returns a json array of all jobs", func() {
@@ -39,7 +45,13 @@ var _ = Describe("JobHandlers", func() {
 			}
 
 			w := httptest.NewRecorder()
-			handlers.ListJobs(w, req)
+
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+			database := models.NewDatabase(dbContext)
+
+			appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
+			handlers.ListJobs(appContext)
 
 			var payload []models.Job
 			err = json.Unmarshal(w.Body.Bytes(), &payload)
@@ -68,11 +80,12 @@ var _ = Describe("JobHandlers", func() {
 
 			w := httptest.NewRecorder()
 
-			jobController := handlers.NewJobController()
-			jobController.Database = SetSomeDatabase()
-			jobController.AddJob(w, req)
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+			database := models.NewDatabase(dbContext)
 
-			handlers.AddJob(w, req)
+			appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
+			handlers.AddJob(appContext)
 
 			Expect(w.Code).To(Equal(201))
 		})
@@ -86,12 +99,17 @@ var _ = Describe("JobHandlers", func() {
 			}
 
 			w := httptest.NewRecorder()
-			handlers.AddJob(w, req)
-
-			var job models.Job
 
 			dbContext := models.NewDbContext()
 			defer dbContext.Dbmap.Db.Close()
+			database := models.NewDatabase(dbContext)
+
+			appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
+			handlers.AddJob(appContext)
+			dbContext.Dbmap.Db.Close()
+
+			var job models.Job
+
 			dbContext.Dbmap.SelectOne(&job, "select * from jobs where name = ?", "test job name")
 
 			Expect(job).NotTo(BeNil())

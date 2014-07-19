@@ -153,7 +153,7 @@ func (l *RunList) execute(r *Run) {
 	}
 	r.End = time.Now()
 	r.Status = "Done"
-	jobList := GetJobListOld()
+	jobList := GetJobList()
 	job, err := jobList.Get(r.Job.Name)
 	if err != nil {
 		return
@@ -209,7 +209,7 @@ func reportRunError(l *RunList, r *Run, result *Result, err error) {
 	r.Status = "Failed"
 	r.End = time.Now()
 	l.Update(*r)
-	jobList := GetJobListOld()
+	jobList := GetJobList()
 	job, err := jobList.Get(r.Job.Name)
 	if err != nil {
 		return

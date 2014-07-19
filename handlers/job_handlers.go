@@ -1,64 +1,45 @@
 package handlers
 
 import (
-	"log"
 	"net/http"
 	"strconv"
 
-	"github.com/coopernurse/gorp"
 	"github.com/gorilla/mux"
 	"github.com/jcarley/gorunner/executor"
 	"github.com/jcarley/gorunner/models"
 )
 
-func withTransaction(dbContext *models.DbContext, handler func(trans *gorp.Transaction) error) error {
-
-	trans, err := dbContext.Dbmap.Begin()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if err := handler(trans); err != nil {
-		return trans.Rollback()
-	}
-
-	return trans.Commit()
-}
-
 func ListJobs(appContext *AppContext) {
-	appContext.Response.Write([]byte(models.GetJobList(appContext.DbContext).Json()))
+	appContext.Write([]byte(appContext.Database.GetJobList().Json()))
 }
 
 func AddJob(appContext *AppContext) {
 
-	dbContext := appContext.DbContext
-
-	payload := unmarshal(appContext.Request.Body, "name", appContext.Response)
+	payload := appContext.Unmarshal("name")
 
 	job := &models.Job{Name: payload["name"], Status: "New"}
 
-	err := withTransaction(dbContext, func(trans *gorp.Transaction) error {
-		return models.AddJob(job, trans)
-	})
-
+	err := appContext.Database.AddJob(job)
 	if err != nil {
-		http.Error(appContext.Response, err.Error(), http.StatusInternalServerError)
+		appContext.Error(err, http.StatusInternalServerError)
 		return
 	}
-	appContext.Response.WriteHeader(201)
+	appContext.WriteHeader(201)
 }
 
-func GetJob(w http.ResponseWriter, r *http.Request) {
+func GetJob(appContext *AppContext) {
+	r := appContext.Request
+
 	vars := mux.Vars(r)
 	jobId := vars["job"]
 
-	job, err := models.GetJob(jobId)
+	job, err := appContext.Database.GetJob(jobId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		appContext.Error(err, http.StatusNotFound)
 		return
 	}
 
-	marshal(job, w)
+	appContext.Marshal(job)
 }
 
 func DeleteJob(w http.ResponseWriter, r *http.Request) {
@@ -72,26 +53,28 @@ func DeleteJob(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func AddTaskToJob(w http.ResponseWriter, r *http.Request) {
+func AddTaskToJob(appContext *AppContext) {
+	r := appContext.Request
+
 	vars := mux.Vars(r)
 	jobId := vars["job"]
 
-	job, err := models.GetJob(jobId)
+	job, err := appContext.Database.GetJob(jobId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		appContext.Error(err, http.StatusNotFound)
 		return
 	}
 	// j := job.(models.Job)
 
-	payload := unmarshal(r.Body, "task", w)
+	payload := appContext.Unmarshal("task")
 	job.AppendTask(payload["task"])
 	// jobList.Update(j)
 
-	w.WriteHeader(201)
+	appContext.WriteHeader(201)
 }
 
 func RemoveTaskFromJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobListOld()
+	jobList := models.GetJobList()
 
 	vars := mux.Vars(r)
 	job, err := jobList.Get(vars["job"])
@@ -111,7 +94,7 @@ func RemoveTaskFromJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func AddTriggerToJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobListOld()
+	jobList := models.GetJobList()
 
 	vars := mux.Vars(r)
 	job, err := jobList.Get(vars["job"])
@@ -137,7 +120,7 @@ func AddTriggerToJob(w http.ResponseWriter, r *http.Request) {
 }
 
 func RemoveTriggerFromJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobListOld()
+	jobList := models.GetJobList()
 
 	vars := mux.Vars(r)
 	job, err := jobList.Get(vars["job"])

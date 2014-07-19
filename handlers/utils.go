@@ -1,53 +1,20 @@
 package handlers
 
 import (
-	"encoding/json"
-	"io"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
-func marshal(item interface{}, w http.ResponseWriter) {
-	bytes, err := json.Marshal(item)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	w.Write(bytes)
-}
-
-func unmarshal(r io.Reader, k string, w http.ResponseWriter) (payload map[string]string) {
-	data, err := ioutil.ReadAll(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = json.Unmarshal(data, &payload)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if payload[k] == "" {
-		http.Error(w, "Please provide a '"+k+"'", http.StatusBadRequest)
-		return
-	}
-
-	return
-}
-
 func Install(r *mux.Router) {
 	r.HandleFunc("/", App)
 	r.HandleFunc("/ws", WsHandler)
 
-	r.HandleFunc("/jobs", AppContextHandlerFunc(ListJobs)).Methods("GET")
-	r.HandleFunc("/jobs", AppContextHandlerFunc(AddJob)).Methods("POST")
-	r.HandleFunc("/jobs/{job}", GetJob).Methods("GET")
+	AppRoute(r, "/jobs", ListJobs).Methods("GET")
+	AppRoute(r, "/jobs", AddJob).Methods("POST")
+	AppRoute(r, "/jobs/{job}", GetJob).Methods("GET")
 	r.HandleFunc("/jobs/{job}", DeleteJob).Methods("DELETE")
-	r.HandleFunc("/jobs/{job}/tasks", AddTaskToJob).Methods("POST")
+	AppRoute(r, "/jobs/{job}/tasks", AddTaskToJob).Methods("POST")
 	r.HandleFunc("/jobs/{job}/tasks/{task}", RemoveTaskFromJob).Methods("DELETE")
 	r.HandleFunc("/jobs/{job}/triggers", AddTriggerToJob).Methods("POST")
 	r.HandleFunc("/jobs/{job}/triggers/{trigger}", RemoveTriggerFromJob).Methods("DELETE")
