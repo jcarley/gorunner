@@ -45,27 +45,6 @@ func NewDatabase(context *DbContext) *Database {
 	return database
 }
 
-func (this *Database) transaction(f func() error) error {
-
-	oldSqlExecutor := this.sqlExecutor
-
-	trans, err := this.dbContext.Dbmap.Begin()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	this.sqlExecutor = trans
-	defer func() {
-		this.sqlExecutor = oldSqlExecutor
-	}()
-
-	if err := f(); err != nil {
-		return trans.Rollback()
-	}
-
-	return trans.Commit()
-}
-
 func (this *Database) AddJob(job *Job) error {
 	return this.transaction(func() error {
 		return this.sqlExecutor.Insert(job)
@@ -105,6 +84,27 @@ func (this *Database) DeleteJob(jobId string) error {
 		}
 		return nil
 	})
+}
+
+func (this *Database) transaction(f func() error) error {
+
+	oldSqlExecutor := this.sqlExecutor
+
+	trans, err := this.dbContext.Dbmap.Begin()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	this.sqlExecutor = trans
+	defer func() {
+		this.sqlExecutor = oldSqlExecutor
+	}()
+
+	if err := f(); err != nil {
+		return trans.Rollback()
+	}
+
+	return trans.Commit()
 }
 
 func GetJobList() *JobList {

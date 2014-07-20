@@ -77,20 +77,19 @@ func AddTaskToJob(appContext *AppContext) {
 	appContext.WriteHeader(201)
 }
 
-func RemoveTaskFromJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobList()
+func RemoveTaskFromJob(appContext *AppContext) {
 
 	vars := mux.Vars(r)
-	job, err := jobList.Get(vars["job"])
+	job, err := appContext.Database.GetJob(vars["job"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		appContext.Error(err, http.StatusNotFound)
 		return
 	}
-	j := job.(models.Job)
+	// j := job.(models.Job)
 
 	taskPosition, err := strconv.Atoi(vars["task"])
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		appContext.Error(err, http.StatusBadRequest)
 		return
 	}
 	j.DeleteTask(taskPosition)
