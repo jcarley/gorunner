@@ -42,13 +42,17 @@ func GetJob(appContext *AppContext) {
 	appContext.Marshal(job)
 }
 
-func DeleteJob(w http.ResponseWriter, r *http.Request) {
+func DeleteJob(appContext *AppContext) {
+	r := appContext.Request
+
 	vars := mux.Vars(r)
 	jobId := vars["job"]
 
-	err := models.DeleteJob(jobId)
+	database := appContext.Database
+
+	err := database.DeleteJob(jobId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		appContext.Error(err, http.StatusInternalServerError)
 		return
 	}
 }
