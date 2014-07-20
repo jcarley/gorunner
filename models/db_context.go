@@ -27,6 +27,7 @@ func NewDbContext() *DbContext {
 	// dbmap.TraceOn("[gorp]", log.New(logFile, "gorunner", log.Lmicroseconds))
 	dbmap.AddTableWithName(Job{}, "jobs").SetKeys(true, "Id")
 	dbmap.AddTableWithName(Task{}, "tasks").SetKeys(true, "Id")
+	dbmap.AddTableWithName(JobTasks{}, "job_tasks")
 
 	return &DbContext{Dbmap: dbmap}
 }
