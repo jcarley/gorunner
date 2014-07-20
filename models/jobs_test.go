@@ -9,6 +9,13 @@ import (
 
 var _ = Describe("Jobs", func() {
 
+	BeforeEach(func() {
+		dbContext := NewDbContext()
+		defer dbContext.Dbmap.Db.Close()
+		err := dbContext.Dbmap.TruncateTables()
+		Expect(err).NotTo(HaveOccurred())
+	})
+
 	Describe("ID function", func() {
 		It("returns the name of the Job", func() {
 			job := Job{Name: "name"}

@@ -1,11 +1,7 @@
 *.json
-
 /.idea
-
 /*.iml
-
 /*.exe
-
 gorunner
-
 *.log
+.DS_Store

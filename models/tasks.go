@@ -2,6 +2,9 @@ package models
 
 import (
 	"encoding/json"
+	"time"
+
+	"github.com/coopernurse/gorp"
 )
 
 type Task struct {
@@ -15,6 +18,17 @@ type Task struct {
 
 func (t Task) ID() string {
 	return t.Name
+}
+
+func (this *Task) PreInsert(s gorp.SqlExecutor) error {
+	this.Created = time.Now().UnixNano()
+	this.Updated = this.Created
+	return nil
+}
+
+func (this *Task) PreUpdate(s gorp.SqlExecutor) error {
+	this.Updated = time.Now().UnixNano()
+	return nil
 }
 
 type TaskList struct {
