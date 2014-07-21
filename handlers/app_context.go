@@ -21,10 +21,13 @@ func AppContextHandlerFunc(f func(appContext *AppContext)) http.HandlerFunc {
 
 		database := models.NewDatabase(dbContext)
 
+		vars := mux.Vars(r)
+
 		appContext := AppContext{
 			Database: database,
 			Response: w,
 			Request:  r,
+			Vars:     vars,
 		}
 		f(&appContext)
 	})
@@ -35,6 +38,7 @@ type AppContext struct {
 	Database *models.Database
 	Response http.ResponseWriter
 	Request  *http.Request
+	Vars     map[string]string
 }
 
 func (this *AppContext) Marshal(item interface{}) {
