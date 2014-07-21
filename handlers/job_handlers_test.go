@@ -121,25 +121,28 @@ var _ = Describe("JobHandlers", func() {
 
 	Describe("RemoveTaskFromJob", func() {
 		var (
-			job  *models.Job
-			task *models.Task
+			job  models.Job
+			task models.Task
 		)
 
 		BeforeEach(func() {
-			job = &models.Job{Name: "test_job", Status: "New"}
-			task = &models.Task{Name: "test_task"}
-
 			dbContext := models.NewDbContext()
 			defer dbContext.Dbmap.Db.Close()
 
-			dbContext.Dbmap.Insert(job, task)
+			job = models.Job{Name: "test_job", Status: "New"}
+			task = models.Task{Name: "test_task"}
+			dbContext.Dbmap.Insert(&job, &task)
+
+			job_task := &models.JobTask{JobId: job.Id, TaskId: task.Id}
+			dbContext.Dbmap.Insert(job_task)
 		})
 
 		It("removes a task from a job", func() {
-			job_id := 1
-			task_id := 2
+			job_id := job.Id
+			task_id := task.Id
 
 			path := fmt.Sprintf("/jobs/%d/tasks/%d", job_id, task_id)
+			fmt.Println(path)
 			req, err := http.NewRequest("DELETE", path, nil)
 			if err != nil {
 				log.Fatal(err)
@@ -155,8 +158,11 @@ var _ = Describe("JobHandlers", func() {
 
 			handlers.RemoveTaskFromJob(appContext)
 
-			//TODO: LEFT OFF HERE
+			count, err := dbContext.Dbmap.SelectInt("select count(*) from job_tasks where job_id = ? and task_id = ?", job_id, task_id)
 
+			Expect(err).NotTo(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(count).To(Equal(0))
 		})
 	})
 
