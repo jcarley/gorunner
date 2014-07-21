@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 
-	"github.com/gorilla/mux"
 	"github.com/jcarley/gorunner/handlers"
 	"github.com/jcarley/gorunner/models"
 
@@ -118,8 +118,6 @@ var _ = Describe("JobHandlers", func() {
 		})
 	})
 
-	// r.HandleFunc("/jobs/{job}/tasks/{task}", RemoveTaskFromJob).Methods("DELETE")
-
 	Describe("RemoveTaskFromJob", func() {
 		var (
 			job  models.Job
@@ -142,22 +140,16 @@ var _ = Describe("JobHandlers", func() {
 			job_id := job.Id
 			task_id := task.Id
 
+			vars := make(map[string]string)
+			vars["job"] = strconv.FormatInt(job_id, 10)
+			vars["task"] = strconv.FormatInt(task_id, 10)
+
 			path := fmt.Sprintf("/jobs/%d/tasks/%d", job_id, task_id)
-			req, _ := http.NewRequest("DELETE", path, nil)
-			w := httptest.NewRecorder()
 
-			m := mux.NewRouter()
-			handlers.AppRoute(m, "/jobs/{job}/tasks/{task}", handlers.RemoveTaskFromJob)
-			m.ServeHTTP(w, req)
-
-			// database := models.NewDatabase(dbContext)
-
-			// appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
-
-			// handlers.RemoveTaskFromJob(appContext)
-
-			dbContext := models.NewDbContext()
+			appContext, dbContext, w := NewAppContext("DELETE", path, nil, vars)
 			defer dbContext.Dbmap.Db.Close()
+			handlers.RemoveTaskFromJob(appContext)
+
 			count, err := dbContext.Dbmap.SelectInt("select count(*) from job_tasks where job_id = ? and task_id = ?", job_id, task_id)
 
 			Expect(err).NotTo(HaveOccurred())
