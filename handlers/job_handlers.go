@@ -1,9 +1,7 @@
 package handlers
 
 import (
-	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -80,10 +78,7 @@ func AddTaskToJob(appContext *AppContext) {
 }
 
 func RemoveTaskFromJob(appContext *AppContext) {
-	r := appContext.Request
-	vars := mux.Vars(r)
-
-	fmt.Fprintln(os.Stdout, vars)
+	vars := appContext.Vars
 
 	job_id, _ := strconv.ParseInt(vars["job"], 10, 64)
 	task_id, _ := strconv.ParseInt(vars["task"], 10, 64)

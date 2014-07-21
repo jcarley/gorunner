@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	"github.com/gorilla/mux"
 	"github.com/jcarley/gorunner/handlers"
 	"github.com/jcarley/gorunner/models"
 
@@ -142,27 +143,26 @@ var _ = Describe("JobHandlers", func() {
 			task_id := task.Id
 
 			path := fmt.Sprintf("/jobs/%d/tasks/%d", job_id, task_id)
-			fmt.Println(path)
-			req, err := http.NewRequest("DELETE", path, nil)
-			if err != nil {
-				log.Fatal(err)
-			}
-
+			req, _ := http.NewRequest("DELETE", path, nil)
 			w := httptest.NewRecorder()
+
+			m := mux.NewRouter()
+			handlers.AppRoute(m, "/jobs/{job}/tasks/{task}", handlers.RemoveTaskFromJob)
+			m.ServeHTTP(w, req)
+
+			// database := models.NewDatabase(dbContext)
+
+			// appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
+
+			// handlers.RemoveTaskFromJob(appContext)
 
 			dbContext := models.NewDbContext()
 			defer dbContext.Dbmap.Db.Close()
-			database := models.NewDatabase(dbContext)
-
-			appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
-
-			handlers.RemoveTaskFromJob(appContext)
-
 			count, err := dbContext.Dbmap.SelectInt("select count(*) from job_tasks where job_id = ? and task_id = ?", job_id, task_id)
 
 			Expect(err).NotTo(HaveOccurred())
 			Expect(w.Code).To(Equal(200))
-			Expect(count).To(Equal(0))
+			Expect(count).To(Equal(int64(0)))
 		})
 	})
 
