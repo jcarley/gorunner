@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -113,6 +114,49 @@ var _ = Describe("JobHandlers", func() {
 			dbContext.Dbmap.SelectOne(&job, "select * from jobs where name = ?", "test job name")
 
 			Expect(job).NotTo(BeNil())
+		})
+	})
+
+	// r.HandleFunc("/jobs/{job}/tasks/{task}", RemoveTaskFromJob).Methods("DELETE")
+
+	Describe("RemoveTaskFromJob", func() {
+		var (
+			job  *models.Job
+			task *models.Task
+		)
+
+		BeforeEach(func() {
+			job = &models.Job{Name: "test_job", Status: "New"}
+			task = &models.Task{Name: "test_task"}
+
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+
+			dbContext.Dbmap.Insert(job, task)
+		})
+
+		It("removes a task from a job", func() {
+			job_id := 1
+			task_id := 2
+
+			path := fmt.Sprintf("/jobs/%d/tasks/%d", job_id, task_id)
+			req, err := http.NewRequest("DELETE", path, nil)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			w := httptest.NewRecorder()
+
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+			database := models.NewDatabase(dbContext)
+
+			appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
+
+			handlers.RemoveTaskFromJob(appContext)
+
+			//TODO: LEFT OFF HERE
+
 		})
 	})
 

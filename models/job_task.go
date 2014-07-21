@@ -1,6 +1,6 @@
 package models
 
-type JobTasks struct {
+type JobTask struct {
 	JobId   int64 `db:"job_id"`
 	TaskId  int64 `db:"task_id"`
 	Created int64 `db:"created_at"`

@@ -78,22 +78,17 @@ func AddTaskToJob(appContext *AppContext) {
 }
 
 func RemoveTaskFromJob(appContext *AppContext) {
-
+	r := appContext.Request
 	vars := mux.Vars(r)
-	job, err := appContext.Database.GetJob(vars["job"])
-	if err != nil {
-		appContext.Error(err, http.StatusNotFound)
-		return
-	}
-	// j := job.(models.Job)
 
-	taskPosition, err := strconv.Atoi(vars["task"])
+	job_id, _ := strconv.ParseInt(vars["job"], 10, 64)
+	task_id, _ := strconv.ParseInt(vars["task"], 10, 64)
+
+	err := appContext.Database.RemoveTaskFromJob(job_id, task_id)
 	if err != nil {
 		appContext.Error(err, http.StatusBadRequest)
 		return
 	}
-	j.DeleteTask(taskPosition)
-	jobList.Update(j)
 }
 
 func AddTriggerToJob(w http.ResponseWriter, r *http.Request) {

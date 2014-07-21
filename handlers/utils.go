@@ -15,7 +15,7 @@ func Install(r *mux.Router) {
 	AppRoute(r, "/jobs/{job}", GetJob).Methods("GET")
 	AppRoute(r, "/jobs/{job}", DeleteJob).Methods("DELETE")
 	AppRoute(r, "/jobs/{job}/tasks", AddTaskToJob).Methods("POST")
-	r.HandleFunc("/jobs/{job}/tasks/{task}", RemoveTaskFromJob).Methods("DELETE")
+	AppRoute(r, "/jobs/{job}/tasks/{task}", RemoveTaskFromJob).Methods("DELETE")
 	r.HandleFunc("/jobs/{job}/triggers", AddTriggerToJob).Methods("POST")
 	r.HandleFunc("/jobs/{job}/triggers/{trigger}", RemoveTriggerFromJob).Methods("DELETE")
 

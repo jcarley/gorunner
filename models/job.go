@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/coopernurse/gorp"
@@ -19,19 +20,70 @@ type Job struct {
 	Version  int64    `db:"version" json:"version,omitempty"`
 }
 
-func (j *Job) PreInsert(s gorp.SqlExecutor) error {
-	j.Created = time.Now().UnixNano()
-	j.Updated = j.Created
+func (this *Job) PreInsert(s gorp.SqlExecutor) error {
+	this.Created = time.Now().UnixNano()
+	this.Updated = this.Created
 	return nil
 }
 
-func (j *Job) PreUpdate(s gorp.SqlExecutor) error {
-	j.Updated = time.Now().UnixNano()
+func (this *Job) PreUpdate(s gorp.SqlExecutor) error {
+	this.Updated = time.Now().UnixNano()
 	return nil
 }
 
 func (j Job) ID() string {
 	return j.Name
+}
+
+func (this *Database) AddJob(job *Job) error {
+	return this.transaction(func() error {
+		return this.sqlExecutor.Insert(job)
+	})
+}
+
+func (this *Database) GetJobList() *JobList {
+	var jobs []Job
+
+	_, err := this.sqlExecutor.Select(&jobs, "select * from jobs")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	jobList := JobList{list{elements: make([]elementer, 0)}}
+
+	for _, job := range jobs {
+		jobList.elements = append(jobList.elements, job)
+	}
+
+	return &jobList
+}
+
+func (this *Database) GetJob(jobId string) (*Job, error) {
+	var job Job
+	if err := this.sqlExecutor.SelectOne(&job, "select * from jobs where name=?", jobId); err != nil {
+		return nil, err
+	}
+
+	return &job, nil
+}
+
+func (this *Database) DeleteJob(jobId string) error {
+	return this.transaction(func() error {
+		if _, err := this.sqlExecutor.Exec("delete from jobs where name = ?", jobId); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
+func (this *Database) RemoveTaskFromJob(job_id, task_id int64) error {
+	return this.transaction(func() error {
+		jobTask := &JobTask{JobId: job_id, TaskId: task_id}
+		if _, err := this.sqlExecutor.Delete(jobTask); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (j *Job) AppendTask(task string) {

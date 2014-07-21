@@ -45,47 +45,6 @@ func NewDatabase(context *DbContext) *Database {
 	return database
 }
 
-func (this *Database) AddJob(job *Job) error {
-	return this.transaction(func() error {
-		return this.sqlExecutor.Insert(job)
-	})
-}
-
-func (this *Database) GetJobList() *JobList {
-	var jobs []Job
-
-	_, err := this.sqlExecutor.Select(&jobs, "select * from jobs")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	jobList := JobList{list{elements: make([]elementer, 0)}}
-
-	for _, job := range jobs {
-		jobList.elements = append(jobList.elements, job)
-	}
-
-	return &jobList
-}
-
-func (this *Database) GetJob(jobId string) (*Job, error) {
-	var job Job
-	if err := this.sqlExecutor.SelectOne(&job, "select * from jobs where name=?", jobId); err != nil {
-		return nil, err
-	}
-
-	return &job, nil
-}
-
-func (this *Database) DeleteJob(jobId string) error {
-	return this.transaction(func() error {
-		if _, err := this.sqlExecutor.Exec("delete from jobs where name = ?", jobId); err != nil {
-			return err
-		}
-		return nil
-	})
-}
-
 func (this *Database) transaction(f func() error) error {
 
 	oldSqlExecutor := this.sqlExecutor
