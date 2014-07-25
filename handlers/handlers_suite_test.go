@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -21,7 +22,12 @@ func TestHandlers(t *testing.T) {
 var _ = BeforeSuite(func() {
 })
 
-func NewAppContext(method, path string, body io.Reader, vars map[string]string) (appContext *handlers.AppContext, dbContext *models.DbContext, w *httptest.ResponseRecorder) {
+func NewAppContext(method, path string, bodyString string, vars map[string]string) (appContext *handlers.AppContext, dbContext *models.DbContext, w *httptest.ResponseRecorder) {
+
+	var body io.Reader
+	if bodyString != "" {
+		body = bytes.NewBufferString(bodyString)
+	}
 	req, _ := http.NewRequest(method, path, body)
 	w = httptest.NewRecorder()
 

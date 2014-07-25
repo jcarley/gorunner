@@ -118,6 +118,44 @@ var _ = Describe("JobHandlers", func() {
 		})
 	})
 
+	Describe("AddTaskToJob", func() {
+		var (
+			job  models.Job
+			task models.Task
+		)
+
+		BeforeEach(func() {
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+
+			job = models.Job{Name: "test_job", Status: "New"}
+			task = models.Task{Name: "test_task"}
+			dbContext.Dbmap.Insert(&job, &task)
+		})
+
+		It("adds a task to an existing job", func() {
+			job_id := job.Id
+			task_id := task.Id
+
+			vars := make(map[string]string)
+			vars["job"] = strconv.FormatInt(job_id, 10)
+
+			path := fmt.Sprintf("/jobs/%d/tasks", job_id)
+
+			bodyString := fmt.Sprintf(`{"task":"%s"}`, strconv.FormatInt(task_id, 10))
+			appContext, dbContext, w := NewAppContext("POST", path, bodyString, vars)
+			defer dbContext.Dbmap.Db.Close()
+
+			handlers.AddTaskToJob(appContext)
+
+			count, err := dbContext.Dbmap.SelectInt("select count(*) from job_tasks where job_id = ? and task_id = ?", job_id, task_id)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(w.Code).To(Equal(201))
+			Expect(count).To(Equal(int64(1)))
+		})
+	})
+
 	Describe("RemoveTaskFromJob", func() {
 		var (
 			job  models.Job
@@ -146,7 +184,7 @@ var _ = Describe("JobHandlers", func() {
 
 			path := fmt.Sprintf("/jobs/%d/tasks/%d", job_id, task_id)
 
-			appContext, dbContext, w := NewAppContext("DELETE", path, nil, vars)
+			appContext, dbContext, w := NewAppContext("DELETE", path, "", vars)
 			defer dbContext.Dbmap.Db.Close()
 			handlers.RemoveTaskFromJob(appContext)
 

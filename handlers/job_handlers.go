@@ -28,10 +28,8 @@ func AddJob(appContext *AppContext) {
 }
 
 func GetJob(appContext *AppContext) {
-	r := appContext.Request
-
-	vars := mux.Vars(r)
-	jobId := vars["job"]
+	vars := appContext.Vars
+	jobId, _ := strconv.ParseInt(vars["job"], 10, 64)
 
 	job, err := appContext.Database.GetJob(jobId)
 	if err != nil {
@@ -43,9 +41,7 @@ func GetJob(appContext *AppContext) {
 }
 
 func DeleteJob(appContext *AppContext) {
-	r := appContext.Request
-
-	vars := mux.Vars(r)
+	vars := appContext.Vars
 	jobId := vars["job"]
 
 	database := appContext.Database
@@ -58,21 +54,19 @@ func DeleteJob(appContext *AppContext) {
 }
 
 func AddTaskToJob(appContext *AppContext) {
-	r := appContext.Request
+	vars := appContext.Vars
 
-	vars := mux.Vars(r)
-	jobId := vars["job"]
+	jobId, _ := strconv.ParseInt(vars["job"], 10, 64)
 
-	job, err := appContext.Database.GetJob(jobId)
+	_, err := appContext.Database.GetJob(jobId)
 	if err != nil {
 		appContext.Error(err, http.StatusNotFound)
 		return
 	}
-	// j := job.(models.Job)
 
 	payload := appContext.Unmarshal("task")
-	job.AppendTask(payload["task"])
-	// jobList.Update(j)
+	taskId, _ := strconv.ParseInt(payload["task"], 10, 64)
+	appContext.Database.AppendTask(jobId, taskId)
 
 	appContext.WriteHeader(201)
 }

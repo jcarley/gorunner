@@ -58,9 +58,9 @@ func (this *Database) GetJobList() *JobList {
 	return &jobList
 }
 
-func (this *Database) GetJob(jobId string) (*Job, error) {
+func (this *Database) GetJob(jobId int64) (*Job, error) {
 	var job Job
-	if err := this.sqlExecutor.SelectOne(&job, "select * from jobs where name=?", jobId); err != nil {
+	if err := this.sqlExecutor.SelectOne(&job, "select * from jobs where id=?", jobId); err != nil {
 		return nil, err
 	}
 
@@ -86,8 +86,14 @@ func (this *Database) RemoveTaskFromJob(job_id, task_id int64) error {
 	})
 }
 
-func (j *Job) AppendTask(task string) {
-	j.Tasks = append(j.Tasks, task)
+func (this *Database) AppendTask(job_id, task_id int64) error {
+	return this.transaction(func() error {
+		jobTask := &JobTask{JobId: job_id, TaskId: task_id}
+		if err := this.sqlExecutor.Insert(jobTask); err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (j *Job) DeleteTask(taskPosition int) error {
