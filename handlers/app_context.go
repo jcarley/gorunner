@@ -10,6 +10,25 @@ import (
 	"github.com/jcarley/gorunner/models"
 )
 
+type AppRouteFunc func(appContext *AppContext)
+
+func (f AppRouteFunc) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	dbContext := models.NewDbContext()
+	defer dbContext.Dbmap.Db.Close()
+
+	database := models.NewDatabase(dbContext)
+
+	vars := mux.Vars(r)
+
+	appContext := AppContext{
+		Database: database,
+		Response: w,
+		Request:  r,
+		Vars:     vars,
+	}
+	f(&appContext)
+}
+
 func AppRoute(r *mux.Router, path string, f func(appContext *AppContext)) *mux.Route {
 	return r.HandleFunc(path, AppContextHandlerFunc(f))
 }
