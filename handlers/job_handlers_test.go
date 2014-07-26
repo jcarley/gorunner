@@ -234,4 +234,48 @@ var _ = Describe("JobHandlers", func() {
 		})
 	})
 
+	Describe("RemoveTriggerFromJob", func() {
+		var (
+			job     models.Job
+			trigger models.Trigger
+		)
+
+		BeforeEach(func() {
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+
+			job = models.Job{Name: "test_job", Status: "New"}
+			trigger = models.Trigger{Name: "test_trigger"}
+			dbContext.Dbmap.Insert(&job, &trigger)
+
+			job_trigger := &models.JobTrigger{JobId: job.Id, TriggerId: trigger.Id}
+			dbContext.Dbmap.Insert(job_trigger)
+		})
+
+		It("removes a trigger from a job", func() {
+			job_id := job.Id
+			trigger_id := trigger.Id
+
+			vars := make(map[string]string)
+			vars["job"] = strconv.FormatInt(job_id, 10)
+			vars["trigger"] = strconv.FormatInt(trigger_id, 10)
+
+			path := fmt.Sprintf("/jobs/%d/trigger/%d", job_id, trigger_id)
+
+			appContext, dbContext, w := NewAppContext("DELETE", path, "", vars)
+			defer dbContext.Dbmap.Db.Close()
+			handlers.RemoveTriggerFromJob(appContext)
+
+			count, err := dbContext.Dbmap.SelectInt("select count(*) from job_triggers where job_id = ? and trigger_id = ?", job_id, trigger_id)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(count).To(Equal(int64(0)))
+		})
+
+		It("Removes the trigger from the list of executors", func() {
+
+		})
+
+	})
 })

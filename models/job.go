@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"time"
 
@@ -76,20 +75,20 @@ func (this *Database) DeleteJob(jobId string) error {
 	})
 }
 
-func (this *Database) RemoveTaskFromJob(job_id, task_id int64) error {
+func (this *Database) AppendTask(job_id, task_id int64) error {
 	return this.transaction(func() error {
 		jobTask := &JobTask{JobId: job_id, TaskId: task_id}
-		if _, err := this.sqlExecutor.Delete(jobTask); err != nil {
+		if err := this.sqlExecutor.Insert(jobTask); err != nil {
 			return err
 		}
 		return nil
 	})
 }
 
-func (this *Database) AppendTask(job_id, task_id int64) error {
+func (this *Database) RemoveTaskFromJob(job_id, task_id int64) error {
 	return this.transaction(func() error {
 		jobTask := &JobTask{JobId: job_id, TaskId: task_id}
-		if err := this.sqlExecutor.Insert(jobTask); err != nil {
+		if _, err := this.sqlExecutor.Delete(jobTask); err != nil {
 			return err
 		}
 		return nil
@@ -106,20 +105,14 @@ func (this *Database) AppendTrigger(job_id, trigger_id int64) error {
 	})
 }
 
-func (j *Job) DeleteTask(taskPosition int) error {
-	i := taskPosition
-	j.Tasks = j.Tasks[:i+copy(j.Tasks[i:], j.Tasks[i+1:])]
-	return nil
-}
-
-func (j *Job) DeleteTrigger(trigger string) error {
-	for i, name := range j.Triggers {
-		if name == trigger {
-			j.Triggers = j.Triggers[:i+copy(j.Triggers[i:], j.Triggers[i+1:])]
-			return nil
+func (this *Database) RemoveTriggerFromJob(job_id, trigger_id int64) error {
+	return this.transaction(func() error {
+		jobTrigger := &JobTrigger{JobId: job_id, TriggerId: trigger_id}
+		if _, err := this.sqlExecutor.Delete(jobTrigger); err != nil {
+			return err
 		}
-	}
-	return errors.New("Trigger not found")
+		return nil
+	})
 }
 
 type JobList struct {
