@@ -21,7 +21,7 @@ var _ = Describe("JobHandlers", func() {
 	BeforeEach(func() {
 		dbContext := models.NewDbContext()
 		defer dbContext.Dbmap.Db.Close()
-		err := dbContext.Dbmap.TruncateTables()
+		err := dbContext.TruncateTables()
 
 		Expect(err).NotTo(HaveOccurred())
 	})
