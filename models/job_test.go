@@ -12,7 +12,7 @@ var _ = Describe("Jobs", func() {
 	BeforeEach(func() {
 		dbContext := NewDbContext()
 		defer dbContext.Dbmap.Db.Close()
-		err := dbContext.Dbmap.TruncateTables()
+		err := dbContext.TruncateTables()
 		Expect(err).NotTo(HaveOccurred())
 	})
 
@@ -20,14 +20,6 @@ var _ = Describe("Jobs", func() {
 		It("returns the name of the Job", func() {
 			job := Job{Name: "name"}
 			Expect(job.ID()).To(Equal("name"))
-		})
-	})
-
-	Describe("AppendTask", func() {
-		It("appends a new task", func() {
-			job := Job{Name: "name", Tasks: make([]string, 0), Status: "status", Triggers: make([]string, 0)}
-			job.AppendTask("task")
-			Expect(job.Tasks).To(ContainElement("task"))
 		})
 	})
 
