@@ -1,12 +1,10 @@
 package handlers_test
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
-	"net/http/httptest"
+
 	"strconv"
 
 	"github.com/jcarley/gorunner/handlers"
@@ -62,45 +60,26 @@ var _ = Describe("JobHandlers", func() {
 	Describe("AddJob function", func() {
 		It("returns a http status code of 201", func() {
 
-			body := bytes.NewBufferString(`{"name": "test job name"}`)
-
-			req, err := http.NewRequest("POST", "/jobs", body)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			w := httptest.NewRecorder()
-
-			dbContext := models.NewDbContext()
+			path := "/jobs"
+			body := `{"name": "test job name"}`
+			appContext, dbContext, w := NewAppContext("POST", path, body, nil)
 			defer dbContext.Dbmap.Db.Close()
-			database := models.NewDatabase(dbContext)
 
-			appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
 			handlers.AddJob(appContext)
 
 			Expect(w.Code).To(Equal(201))
 		})
 
 		It("adds a job", func() {
-			body := bytes.NewBufferString(`{"name": "test job name"}`)
 
-			req, err := http.NewRequest("POST", "/jobs", body)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			w := httptest.NewRecorder()
-
-			dbContext := models.NewDbContext()
+			path := "/jobs"
+			body := `{"name": "test job name"}`
+			appContext, dbContext, _ := NewAppContext("POST", path, body, nil)
 			defer dbContext.Dbmap.Db.Close()
-			database := models.NewDatabase(dbContext)
 
-			appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
 			handlers.AddJob(appContext)
-			dbContext.Dbmap.Db.Close()
 
 			var job models.Job
-
 			dbContext.Dbmap.SelectOne(&job, "select * from jobs where name = ?", "test job name")
 
 			Expect(job).NotTo(BeNil())
