@@ -21,6 +21,25 @@ var _ = Describe("TaskHandlers", func() {
 		Expect(err).NotTo(HaveOccurred())
 	})
 
+	Describe("AddTask", func() {
+		It("Adds a task to the database", func() {
+
+			path := "/jobs"
+			body := `{"name":"test"}`
+
+			appContext, dbContext, w := NewAppContext("POST", path, body, nil)
+			defer dbContext.Dbmap.Db.Close()
+			handlers.AddTask(appContext)
+
+			var task models.Task
+
+			dbContext.Dbmap.SelectOne(&task, "select * from tasks where name = ?", "test")
+
+			Expect(w.Code).To(Equal(201))
+			Expect(task).NotTo(BeNil())
+		})
+	})
+
 	Describe("ListTasks", func() {
 
 		BeforeEach(func() {
