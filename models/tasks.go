@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/json"
+	"log"
 	"time"
 
 	"github.com/coopernurse/gorp"
@@ -29,6 +30,29 @@ func (this *Task) PreInsert(s gorp.SqlExecutor) error {
 func (this *Task) PreUpdate(s gorp.SqlExecutor) error {
 	this.Updated = time.Now().UnixNano()
 	return nil
+}
+
+func (this *Database) AddTask(task *Task) error {
+	return this.transaction(func() error {
+		return this.sqlExecutor.Insert(task)
+	})
+}
+
+func (this *Database) GetTaskList() *TaskList {
+
+	var tasks []Task
+	_, err := this.sqlExecutor.Select(&tasks, "select * from tasks")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	taskList := TaskList{list{elements: make([]elementer, 0)}}
+
+	for _, task := range tasks {
+		taskList.elements = append(taskList.elements, task)
+	}
+
+	return &taskList
 }
 
 type TaskList struct {
