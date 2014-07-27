@@ -40,23 +40,14 @@ var _ = Describe("JobHandlers", func() {
 		})
 
 		It("returns a json array of all jobs", func() {
-
-			req, err := http.NewRequest("GET", "/jobs", nil)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			w := httptest.NewRecorder()
-
-			dbContext := models.NewDbContext()
+			path := "/jobs"
+			appContext, dbContext, w := NewAppContext("GET", path, "", nil)
 			defer dbContext.Dbmap.Db.Close()
-			database := models.NewDatabase(dbContext)
 
-			appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
 			handlers.ListJobs(appContext)
 
 			var payload []models.Job
-			err = json.Unmarshal(w.Body.Bytes(), &payload)
+			err := json.Unmarshal(w.Body.Bytes(), &payload)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -65,8 +56,6 @@ var _ = Describe("JobHandlers", func() {
 			Expect(w.Body.String()).NotTo(BeNil())
 			Expect(payload[0].Name).To(Equal("test build"))
 			Expect(payload[0].Status).To(Equal("New"))
-
-			// fmt.Printf("%d - %s", w.Code, w.Body.String())
 		})
 	})
 

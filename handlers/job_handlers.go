@@ -8,6 +8,7 @@ import (
 )
 
 func ListJobs(appContext *AppContext) {
+	appContext.Header().Set("Content-Type", "application/json")
 	appContext.Write([]byte(appContext.Database.GetJobList().Json()))
 }
 
