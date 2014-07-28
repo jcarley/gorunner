@@ -96,19 +96,19 @@ func (this *Database) AppendTask(job_id, task_id int64) error {
 	})
 }
 
+func (this *Database) AppendTrigger(job_id, trigger_id int64) error {
+	return this.transaction(func() error {
+		jobTrigger := &JobTrigger{JobId: job_id, TriggerId: trigger_id}
+		if err := this.sqlExecutor.Insert(jobTrigger); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 func (j *Job) DeleteTask(taskPosition int) error {
 	i := taskPosition
 	j.Tasks = j.Tasks[:i+copy(j.Tasks[i:], j.Tasks[i+1:])]
-	return nil
-}
-
-func (j *Job) AppendTrigger(trigger string) error {
-	for _, name := range j.Triggers {
-		if name == trigger {
-			return errors.New("Trigger already on job")
-		}
-	}
-	j.Triggers = append(j.Triggers, trigger)
 	return nil
 }
 

@@ -156,6 +156,44 @@ var _ = Describe("JobHandlers", func() {
 		})
 	})
 
+	Describe("AddTriggerToJob", func() {
+		var (
+			job     models.Job
+			trigger models.Trigger
+		)
+
+		BeforeEach(func() {
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+
+			job = models.Job{Name: "test_job", Status: "New"}
+			trigger = models.Trigger{Name: "test_trigger"}
+			dbContext.Dbmap.Insert(&job, &trigger)
+		})
+
+		It("adds a trigger to an existing job", func() {
+			job_id := job.Id
+			trigger_id := trigger.Id
+
+			vars := make(map[string]string)
+			vars["job"] = strconv.FormatInt(job_id, 10)
+
+			path := fmt.Sprintf("/jobs/%d/triggers", job_id)
+
+			bodyString := fmt.Sprintf(`{"trigger":"%s"}`, strconv.FormatInt(trigger_id, 10))
+			appContext, dbContext, w := NewAppContext("POST", path, bodyString, vars)
+			defer dbContext.Dbmap.Db.Close()
+
+			handlers.AddTriggerToJob(appContext)
+
+			count, err := dbContext.Dbmap.SelectInt("select count(*) from job_triggers where job_id = ? and trigger_id = ?", job_id, trigger_id)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(w.Code).To(Equal(201))
+			Expect(count).To(Equal(int64(1)))
+		})
+	})
+
 	Describe("RemoveTaskFromJob", func() {
 		var (
 			job  models.Job

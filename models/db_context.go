@@ -25,9 +25,11 @@ func NewDbContext() *DbContext {
 	checkError(err, "")
 
 	dbmap.TraceOn("[gorp]", log.New(logFile, "gorunner", log.Lmicroseconds))
+	dbmap.AddTableWithName(JobTask{}, "job_tasks").SetKeys(false, "JobId", "TaskId")
+	dbmap.AddTableWithName(JobTrigger{}, "job_triggers").SetKeys(false, "JobId", "TriggerId")
 	dbmap.AddTableWithName(Job{}, "jobs").SetKeys(true, "Id")
 	dbmap.AddTableWithName(Task{}, "tasks").SetKeys(true, "Id")
-	dbmap.AddTableWithName(JobTask{}, "job_tasks").SetKeys(false, "JobId", "TaskId")
+	dbmap.AddTableWithName(Trigger{}, "triggers").SetKeys(true, "Id")
 
 	return &DbContext{Dbmap: dbmap}
 }

@@ -84,30 +84,22 @@ func RemoveTaskFromJob(appContext *AppContext) {
 	}
 }
 
-func AddTriggerToJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobList()
+func AddTriggerToJob(appContext *AppContext) {
+	vars := appContext.Vars
 
-	vars := mux.Vars(r)
-	job, err := jobList.Get(vars["job"])
+	jobId, _ := strconv.ParseInt(vars["job"], 10, 64)
+
+	_, err := appContext.Database.GetJob(jobId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		appContext.Error(err, http.StatusNotFound)
 		return
 	}
-	j := job.(models.Job)
 
-	payload := unmarshal(r.Body, "trigger", w)
+	payload := appContext.Unmarshal("trigger")
+	triggerId, _ := strconv.ParseInt(payload["trigger"], 10, 64)
+	appContext.Database.AppendTrigger(jobId, triggerId)
 
-	j.AppendTrigger(payload["trigger"])
-	triggerList := models.GetTriggerList()
-	t, err := triggerList.Get(payload["trigger"])
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	executor.AddTrigger(t.(models.Trigger))
-	jobList.Update(j)
-
-	w.WriteHeader(201)
+	appContext.WriteHeader(201)
 }
 
 func RemoveTriggerFromJob(w http.ResponseWriter, r *http.Request) {

@@ -2,15 +2,33 @@ package models
 
 import (
 	"encoding/json"
+	"time"
+
+	"github.com/coopernurse/gorp"
 )
 
 type Trigger struct {
+	Id       int64  `db:"id" json:"id,omitempty"`
 	Name     string `json:"name"`
 	Schedule string `json:"schedule"`
+	Created  int64  `db:"created_at" json:"created_at,omitempty"`
+	Updated  int64  `db:"updated_at" json:"updated_at,omitempty"`
+	Version  int64  `db:"version" json:"version,omitempty"`
 }
 
 func (t Trigger) ID() string {
 	return t.Name
+}
+
+func (this *Trigger) PreInsert(s gorp.SqlExecutor) error {
+	this.Created = time.Now().UnixNano()
+	this.Updated = this.Created
+	return nil
+}
+
+func (this *Trigger) PreUpdate(s gorp.SqlExecutor) error {
+	this.Updated = time.Now().UnixNano()
+	return nil
 }
 
 type TriggerList struct {
