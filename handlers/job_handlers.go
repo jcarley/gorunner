@@ -4,12 +4,11 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
-	"github.com/jcarley/gorunner/executor"
 	"github.com/jcarley/gorunner/models"
 )
 
 func ListJobs(appContext *AppContext) {
+	appContext.Header().Set("Content-Type", "application/json")
 	appContext.Write([]byte(appContext.Database.GetJobList().Json()))
 }
 
@@ -102,25 +101,22 @@ func AddTriggerToJob(appContext *AppContext) {
 	appContext.WriteHeader(201)
 }
 
-func RemoveTriggerFromJob(w http.ResponseWriter, r *http.Request) {
-	jobList := models.GetJobList()
+func RemoveTriggerFromJob(appContext *AppContext) {
+	vars := appContext.Vars
 
-	vars := mux.Vars(r)
-	job, err := jobList.Get(vars["job"])
+	job_id, _ := strconv.ParseInt(vars["job"], 10, 64)
+	trigger_id, _ := strconv.ParseInt(vars["trigger"], 10, 64)
+
+	err := appContext.Database.RemoveTriggerFromJob(job_id, trigger_id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		appContext.Error(err, http.StatusBadRequest)
 		return
 	}
-	j := job.(models.Job)
-
-	t := vars["trigger"]
-	j.DeleteTrigger(t)
-	jobList.Update(j)
 
 	// If Trigger is no longer attached to any Jobs, remove it from Cron to save cycles
-	jobs := jobList.GetJobsWithTrigger(t)
+	// jobs, err := appContext.Database.GetJobsWithTrigger(trigger_id)
 
-	if len(jobs) == 0 {
-		executor.RemoveTrigger(t)
-	}
+	// if len(jobs) == 0 {
+	// executor.RemoveTrigger(t)
+	// }
 }

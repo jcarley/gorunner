@@ -1,12 +1,10 @@
 package handlers_test
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
-	"net/http/httptest"
+
 	"strconv"
 
 	"github.com/jcarley/gorunner/handlers"
@@ -21,7 +19,7 @@ var _ = Describe("JobHandlers", func() {
 	BeforeEach(func() {
 		dbContext := models.NewDbContext()
 		defer dbContext.Dbmap.Db.Close()
-		err := dbContext.Dbmap.TruncateTables()
+		err := dbContext.TruncateTables()
 
 		Expect(err).NotTo(HaveOccurred())
 	})
@@ -40,23 +38,14 @@ var _ = Describe("JobHandlers", func() {
 		})
 
 		It("returns a json array of all jobs", func() {
-
-			req, err := http.NewRequest("GET", "/jobs", nil)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			w := httptest.NewRecorder()
-
-			dbContext := models.NewDbContext()
+			path := "/jobs"
+			appContext, dbContext, w := NewAppContext("GET", path, "", nil)
 			defer dbContext.Dbmap.Db.Close()
-			database := models.NewDatabase(dbContext)
 
-			appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
 			handlers.ListJobs(appContext)
 
 			var payload []models.Job
-			err = json.Unmarshal(w.Body.Bytes(), &payload)
+			err := json.Unmarshal(w.Body.Bytes(), &payload)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -65,53 +54,32 @@ var _ = Describe("JobHandlers", func() {
 			Expect(w.Body.String()).NotTo(BeNil())
 			Expect(payload[0].Name).To(Equal("test build"))
 			Expect(payload[0].Status).To(Equal("New"))
-
-			// fmt.Printf("%d - %s", w.Code, w.Body.String())
 		})
 	})
 
 	Describe("AddJob function", func() {
 		It("returns a http status code of 201", func() {
 
-			body := bytes.NewBufferString(`{"name": "test job name"}`)
-
-			req, err := http.NewRequest("POST", "/jobs", body)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			w := httptest.NewRecorder()
-
-			dbContext := models.NewDbContext()
+			path := "/jobs"
+			body := `{"name": "test job name"}`
+			appContext, dbContext, w := NewAppContext("POST", path, body, nil)
 			defer dbContext.Dbmap.Db.Close()
-			database := models.NewDatabase(dbContext)
 
-			appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
 			handlers.AddJob(appContext)
 
 			Expect(w.Code).To(Equal(201))
 		})
 
 		It("adds a job", func() {
-			body := bytes.NewBufferString(`{"name": "test job name"}`)
 
-			req, err := http.NewRequest("POST", "/jobs", body)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			w := httptest.NewRecorder()
-
-			dbContext := models.NewDbContext()
+			path := "/jobs"
+			body := `{"name": "test job name"}`
+			appContext, dbContext, _ := NewAppContext("POST", path, body, nil)
 			defer dbContext.Dbmap.Db.Close()
-			database := models.NewDatabase(dbContext)
 
-			appContext := &handlers.AppContext{Request: req, Response: w, Database: database}
 			handlers.AddJob(appContext)
-			dbContext.Dbmap.Db.Close()
 
 			var job models.Job
-
 			dbContext.Dbmap.SelectOne(&job, "select * from jobs where name = ?", "test job name")
 
 			Expect(job).NotTo(BeNil())
@@ -234,4 +202,48 @@ var _ = Describe("JobHandlers", func() {
 		})
 	})
 
+	Describe("RemoveTriggerFromJob", func() {
+		var (
+			job     models.Job
+			trigger models.Trigger
+		)
+
+		BeforeEach(func() {
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+
+			job = models.Job{Name: "test_job", Status: "New"}
+			trigger = models.Trigger{Name: "test_trigger"}
+			dbContext.Dbmap.Insert(&job, &trigger)
+
+			job_trigger := &models.JobTrigger{JobId: job.Id, TriggerId: trigger.Id}
+			dbContext.Dbmap.Insert(job_trigger)
+		})
+
+		It("removes a trigger from a job", func() {
+			job_id := job.Id
+			trigger_id := trigger.Id
+
+			vars := make(map[string]string)
+			vars["job"] = strconv.FormatInt(job_id, 10)
+			vars["trigger"] = strconv.FormatInt(trigger_id, 10)
+
+			path := fmt.Sprintf("/jobs/%d/trigger/%d", job_id, trigger_id)
+
+			appContext, dbContext, w := NewAppContext("DELETE", path, "", vars)
+			defer dbContext.Dbmap.Db.Close()
+			handlers.RemoveTriggerFromJob(appContext)
+
+			count, err := dbContext.Dbmap.SelectInt("select count(*) from job_triggers where job_id = ? and trigger_id = ?", job_id, trigger_id)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(w.Code).To(Equal(200))
+			Expect(count).To(Equal(int64(0)))
+		})
+
+		It("Removes the trigger from the list of executors", func() {
+
+		})
+
+	})
 })

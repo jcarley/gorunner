@@ -7,24 +7,23 @@ import (
 	"github.com/jcarley/gorunner/models"
 )
 
-func ListTasks(w http.ResponseWriter, r *http.Request) {
-	taskList := models.GetTaskList()
+func ListTasks(appContext *AppContext) {
+	taskList := appContext.Database.GetTaskList()
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Write([]byte(taskList.Json()))
+	appContext.Header().Set("Content-Type", "application/json")
+	appContext.Write([]byte(taskList.Json()))
 }
 
-func AddTask(w http.ResponseWriter, r *http.Request) {
-	taskList := models.GetTaskList()
+func AddTask(appContext *AppContext) {
+	payload := appContext.Unmarshal("name")
 
-	payload := unmarshal(r.Body, "name", w)
-
-	err := taskList.Append(models.Task{Name: payload["name"], Script: ""})
+	task := models.Task{Name: payload["name"], Script: ""}
+	err := appContext.Database.AddTask(&task)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		appContext.Error(err, http.StatusBadRequest)
 		return
 	}
-	w.WriteHeader(201)
+	appContext.WriteHeader(201)
 }
 
 func GetTask(w http.ResponseWriter, r *http.Request) {

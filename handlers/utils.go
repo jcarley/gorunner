@@ -18,10 +18,10 @@ func Install(r *mux.Router) {
 	// AppRoute(r, "/jobs/{job}/tasks/{task}", RemoveTaskFromJob).Methods("DELETE")
 	r.Handle("/jobs/{job}/tasks/{task}", AppRouteFunc(RemoveTaskFromJob)).Methods("DELETE")
 	AppRoute(r, "/jobs/{job}/triggers", AddTriggerToJob).Methods("POST")
-	r.HandleFunc("/jobs/{job}/triggers/{trigger}", RemoveTriggerFromJob).Methods("DELETE")
+	AppRoute(r, "/jobs/{job}/triggers/{trigger}", RemoveTriggerFromJob).Methods("DELETE")
 
-	r.HandleFunc("/tasks", ListTasks).Methods("GET")
-	r.HandleFunc("/tasks", AddTask).Methods("POST")
+	AppRoute(r, "/tasks", ListTasks).Methods("GET")
+	AppRoute(r, "/tasks", AddTask).Methods("POST")
 	r.HandleFunc("/tasks/{task}", GetTask).Methods("GET")
 	r.HandleFunc("/tasks/{task}", UpdateTask).Methods("PUT")
 	r.HandleFunc("/tasks/{task}", DeleteTask).Methods("DELETE")

@@ -25,11 +25,11 @@ func NewDbContext() *DbContext {
 	checkError(err, "")
 
 	dbmap.TraceOn("[gorp]", log.New(logFile, "gorunner", log.Lmicroseconds))
-	dbmap.AddTableWithName(JobTask{}, "job_tasks").SetKeys(false, "JobId", "TaskId")
-	dbmap.AddTableWithName(JobTrigger{}, "job_triggers").SetKeys(false, "JobId", "TriggerId")
 	dbmap.AddTableWithName(Job{}, "jobs").SetKeys(true, "Id")
 	dbmap.AddTableWithName(Task{}, "tasks").SetKeys(true, "Id")
 	dbmap.AddTableWithName(Trigger{}, "triggers").SetKeys(true, "Id")
+	dbmap.AddTableWithName(JobTask{}, "job_tasks").SetKeys(false, "JobId", "TaskId")
+	dbmap.AddTableWithName(JobTrigger{}, "job_triggers").SetKeys(false, "JobId", "TriggerId")
 
 	return &DbContext{Dbmap: dbmap}
 }
@@ -49,6 +49,13 @@ func logfileLocation() (io.Writer, error) {
 	checkError(err, "")
 
 	return logFile, nil
+}
+
+func (this *DbContext) TruncateTables() error {
+	this.Dbmap.Exec("SET FOREIGN_KEY_CHECKS = 0;")
+	err := this.Dbmap.TruncateTables()
+	this.Dbmap.Exec("SET FOREIGN_KEY_CHECKS = 1;")
+	return err
 }
 
 func (this *DbContext) Migrate() {
