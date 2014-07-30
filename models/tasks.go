@@ -32,6 +32,15 @@ func (this *Task) PreUpdate(s gorp.SqlExecutor) error {
 	return nil
 }
 
+func (this *Database) GetTask(taskId int64) (*Task, error) {
+	var task Task
+	if err := this.sqlExecutor.SelectOne(&task, "select * from tasks where id=?", taskId); err != nil {
+		return nil, err
+	}
+
+	return &task, nil
+}
+
 func (this *Database) AddTask(task *Task) error {
 	return this.transaction(func() error {
 		return this.sqlExecutor.Insert(task)

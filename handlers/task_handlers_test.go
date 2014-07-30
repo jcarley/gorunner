@@ -2,7 +2,9 @@ package handlers_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/jcarley/gorunner/handlers"
 	"github.com/jcarley/gorunner/models"
@@ -37,6 +39,36 @@ var _ = Describe("TaskHandlers", func() {
 
 			Expect(w.Code).To(Equal(201))
 			Expect(task).NotTo(BeNil())
+		})
+	})
+
+	Describe("GetTask", func() {
+
+		var task models.Task
+
+		BeforeEach(func() {
+			task = models.Task{Name: "test task", Script: "script"}
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+			database := models.NewDatabase(dbContext)
+			database.AddTask(&task)
+		})
+
+		It("Returns a task with the given Id", func() {
+			path := fmt.Sprintf("/tasks/%d", task.Id)
+			vars := make(map[string]string)
+			vars["task"] = strconv.FormatInt(task.Id, 10)
+
+			appContext, dbContext, w := NewAppContext("GET", path, "", vars)
+			defer dbContext.Dbmap.Db.Close()
+
+			handlers.GetTask(appContext)
+
+			count, err := dbContext.Dbmap.SelectInt("select count(*) from tasks where id = ?", task.Id)
+
+			Expect(err).NotTo(HaveOccurred())
+			Expect(count).To(Equal(int64(1)))
+			Expect(w.Code).To(Equal(200))
 		})
 	})
 

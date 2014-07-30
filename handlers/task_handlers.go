@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gorilla/mux"
 	"github.com/jcarley/gorunner/models"
@@ -26,17 +27,17 @@ func AddTask(appContext *AppContext) {
 	appContext.WriteHeader(201)
 }
 
-func GetTask(w http.ResponseWriter, r *http.Request) {
-	taskList := models.GetTaskList()
+func GetTask(appContext *AppContext) {
+	vars := appContext.Vars
 
-	vars := mux.Vars(r)
-	task, err := taskList.Get(vars["task"])
+	task_id, _ := strconv.ParseInt(vars["task"], 10, 64)
+	task, err := appContext.Database.GetTask(task_id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		appContext.Error(err, http.StatusNotFound)
 		return
 	}
 
-	marshal(task, w)
+	appContext.Marshal(task)
 }
 
 func UpdateTask(w http.ResponseWriter, r *http.Request) {
