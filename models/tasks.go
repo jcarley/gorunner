@@ -47,6 +47,15 @@ func (this *Database) AddTask(task *Task) error {
 	})
 }
 
+func (this *Database) UpdateTask(task *Task) error {
+	return this.transaction(func() error {
+		if _, err := this.sqlExecutor.Update(task); err != nil {
+			return err
+		}
+		return nil
+	})
+}
+
 func (this *Database) GetTaskList() *TaskList {
 
 	var tasks []Task

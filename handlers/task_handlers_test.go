@@ -72,6 +72,40 @@ var _ = Describe("TaskHandlers", func() {
 		})
 	})
 
+	Describe("UpdateTask", func() {
+
+		var task *models.Task
+
+		BeforeEach(func() {
+			task = &models.Task{Name: "test task", Script: "script"}
+
+			dbContext := models.NewDbContext()
+			defer dbContext.Dbmap.Db.Close()
+
+			database := models.NewDatabase(dbContext)
+
+			database.AddTask(task)
+		})
+
+		It("updates the script attribute of a task", func() {
+			path := fmt.Sprintf("/tasks/%d", task.Id)
+			vars := make(map[string]string)
+			vars["task"] = strconv.FormatInt(task.Id, 10)
+			body := `{"script": "new bash script"}`
+
+			appContext, dbContext, w := NewAppContext("PUT", path, body, vars)
+			defer dbContext.Dbmap.Db.Close()
+
+			handlers.UpdateTask(appContext)
+
+			task, err := appContext.Database.GetTask(task.Id)
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(task.Script).To(Equal("new bash script"))
+			Expect(w.Code).To(Equal(200))
+		})
+	})
+
 	Describe("ListTasks", func() {
 
 		BeforeEach(func() {

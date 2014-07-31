@@ -22,7 +22,7 @@ func Install(r *mux.Router) {
 	AppRoute(r, "/tasks", ListTasks).Methods("GET")
 	AppRoute(r, "/tasks", AddTask).Methods("POST")
 	AppRoute(r, "/tasks/{task}", GetTask).Methods("GET")
-	r.HandleFunc("/tasks/{task}", UpdateTask).Methods("PUT")
+	AppRoute(r, "/tasks/{task}", UpdateTask).Methods("PUT")
 	r.HandleFunc("/tasks/{task}", DeleteTask).Methods("DELETE")
 	r.HandleFunc("/tasks/{task}/jobs", ListJobsForTask).Methods("GET")
 

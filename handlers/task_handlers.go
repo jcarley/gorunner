@@ -40,21 +40,21 @@ func GetTask(appContext *AppContext) {
 	appContext.Marshal(task)
 }
 
-func UpdateTask(w http.ResponseWriter, r *http.Request) {
-	taskList := models.GetTaskList()
+func UpdateTask(appContext *AppContext) {
 
-	vars := mux.Vars(r)
-	task, err := taskList.Get(vars["task"])
+	vars := appContext.Vars
+
+	taskId, _ := strconv.ParseInt(vars["task"], 10, 64)
+	task, err := appContext.Database.GetTask(taskId)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		appContext.Error(err, http.StatusNotFound)
 		return
 	}
 
-	payload := unmarshal(r.Body, "script", w)
+	payload := appContext.Unmarshal("script")
 
-	t := task.(models.Task)
-	t.Script = payload["script"]
-	taskList.Update(t)
+	task.Script = payload["script"]
+	appContext.Database.UpdateTask(task)
 }
 
 func DeleteTask(w http.ResponseWriter, r *http.Request) {
